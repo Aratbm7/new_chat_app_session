@@ -1,6 +1,6 @@
 from django.contrib.sessions.backends.db import SessionStore as DBStore
 import chat
-
+from django.utils import timezone
 
 class SessionStore(DBStore):
 
@@ -16,8 +16,16 @@ class SessionStore(DBStore):
         When you add more field to the custom session model you have to update the function 
         to handle those fields as well.
         """
+        print('hi')
+        # data.pop('updated_at')
         obj = super().create_model_instance(data)
+    
+        create = data.pop('created_at')
+        print('create_pop ' + create)
 
-        obj.created_at = data.get('created_at')
-        obj.updated_at = data.get('updated_at')
+        print('bye')
+        # obj.created_at = data.pop('created_at',)
+        # print(obj.created_at)
+        # obj.updated_at = data.pop('updated_at')
+        print('created_at')
         return obj
