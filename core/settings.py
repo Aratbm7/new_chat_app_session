@@ -25,19 +25,23 @@ SECRET_KEY = 'django-insecure-8$k&@2pc0kpe(a%1(i(_&8w5=s-&#*3kd=a$7^qy)e%)(%t*6^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 
+
 INSTALLED_APPS = [
-    'channels',
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
     'chat',
     # 'custom_session',
 ]
@@ -137,5 +141,11 @@ CHANNEL_LAYERS = {
 
 
 # custom session model
-SESSION_SAVE_EVERY_REQUEST = True
+# SESSION_SAVE_EVERY_REQUEST = True
 SESSION_ENGINE = "core.session_backend"
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+}

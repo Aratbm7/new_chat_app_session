@@ -1,44 +1,46 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from django.urls import reverse_lazy
-from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
-from .forms import UserRegisterForm
-from  django.contrib.auth import authenticate, login
-from django.views.generic import CreateView
-from django.utils import timezone
+from django.shortcuts import render
+from .models import GroupChat
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
+import re
+import codecs
 
-# class SignUp(CreateView):
-#     queryset = User.objects.all()
-#     form_class = UserRegisterForm
-#     success_url = reverse_lazy('login')
-#     template_name = 'chat/register.html'
-    
-    
-def register(request):
-    if request.method == 'POST':
-        form = UserRegisterForm(request.POST)
-        if form.is_valid():
-            form.save()
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password2')
-
-            user = authenticate(username=username,password=password)
-            if user is not None:
-                if user.is_active:
-                    login(request, user)
-                    return redirect('chat:index')
-
-            return redirect('login')
-    else:
-        form = UserRegisterForm()
-    return render(request, 'chat/register.html', {'form': form})
-
-# @login_required
 def index(request):
-    # request.session['created_at'] = 'hello'
-    # member_session_date = request.session['created_at'] 
-    # request.session.modified()
-    # print(request.session.custom_session_set.created_at)  
+    print(request.session)
+    request.session.save()
+
     return render(request, 'chat/index.html', { 'session_key': request.session.session_key})
     
+    
+def aes_encryption(s1, s2):
+    combined_string = s1 + s2
+    encryption_key = get_random_bytes(16)
+    cipher = AES.new(encryption_key, AES.MODE_EAX)
+    ciphertext, tag = cipher.encrypt_and_digest(combined_string.encode())
+    # print(type(ciphertext))
+    ciphertext = ciphertext.decode('latin-1')
+    # print('ciphertext =', ciphertext)
+    # print(type(ciphertext))
+    room_name = codecs.encode(ciphertext, 'ascii', 'ignore').decode('unicode_escape')
+    # print('room_name =',room_name)
+    # print(type(room_name))
+    group_name = room_name
+    sanitized_group_name = re.sub(r'[^\w.-]', '', group_name)[:100]
+    # print('sanitized_group_name =', sanitized_group_name)
+    # print(type(sanitized_group_name))
+    return sanitized_group_name
+
+
+def room(request):
+    if request.method == 'GET':
+        request.session.save()
+        session_key = request.session.session_key
+        
+        if not GroupChat.objects.filter(creator=request.session.session_key).exists():
+            unique_code = aes_encryption(request.META['HTTP_HOST'], session_key)    
+            print('unique_code_from_view', unique_code)
+            GroupChat.objects.create(creator=session_key, 
+                                     title='question_from = %s' % session_key,
+                                     unique_code=unique_code)
+
+    return render (request, 'chat/chatroom.html')

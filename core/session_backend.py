@@ -8,24 +8,21 @@ class SessionStore(DBStore):
     def get_model_class(cls):
         print('helllo')
         return chat.models.CustomSession
-
+    
     def create_model_instance(self, data):
         """
-        overriding the function to save the changes to db using `session["user_id"] = user.id` .
-        This will create the model instance with the custom field values. 
-        When you add more field to the custom session model you have to update the function 
-        to handle those fields as well.
+        Return a new instance of the session model object, which represents the
+        current session state. Intended to be used for saving the session data
+        to the database.
         """
-        print('hi')
-        # data.pop('updated_at')
-        obj = super().create_model_instance(data)
-    
-        create = data.pop('created_at')
-        print('create_pop ' + create)
-
-        print('bye')
-        # obj.created_at = data.pop('created_at',)
-        # print(obj.created_at)
-        # obj.updated_at = data.pop('updated_at')
-        print('created_at')
-        return obj
+        custom_session_instance = self._get_session_from_db()
+        if not custom_session_instance:
+            date_created = None
+        else:
+            date_created = custom_session_instance.created_at
+        return self.model(
+            session_key=self._get_or_create_session_key(),
+            session_data=self.encode(data),
+            expire_date=self.get_expiry_date(),
+            created_at = date_created
+        )
