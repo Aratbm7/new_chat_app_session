@@ -6,13 +6,22 @@
     <title>Chat Rooms</title>
 </head>
 <body>
-    <h1>{{ session_key }}</h1>
-    What chat room would you like to enter?<br>
-    <input id="room-name-input" type="text" size="100"><br>
-    <input id="room-name-submit" type="button" value="Enter">
+    <ul>
+        What chat room would you like to enter?<br>
+        {% for chat in chat_list %}
+        
+        <li>
+            <a href="http://{{chat.domain_name}}:8000/chat/{{chat.unique_code}}/" target="_blank"> {{ chat.unique_code}}</a>
+        </li>
+        
+        {% endfor %}
+        
+    </ul>
+    {% comment %} <input id="room-name-input" type="text" size="100"><br> {% endcomment %}
+    {% comment %} <input id="room-name-submit" type="button" value="Enter"> {% endcomment %}
 
-    {% comment %} <script>
-        document.querySelector('#room-name-input').focus();
+    <script>
+        {% comment %} document.querySelector('#room-name-input').focus(); {% endcomment %}
         document.querySelector('#room-name-input').onkeyup = function(e) {
             if (e.keyCode === 13) {  // enter, return
                 document.querySelector('#room-name-submit').click();
@@ -21,8 +30,8 @@
 
         document.querySelector('#room-name-submit').onclick = function(e) {
             var roomName = document.querySelector('#room-name-input').value;
-            window.location.pathname = '/chat/' + roomName + '/';
+            window.location.pathname = '' + roomName + '/';
         };
-    </script> {% endcomment %}
+    </script>
 </body>
 </html>

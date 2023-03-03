@@ -1,10 +1,17 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+# from django.contrib.auth.models import User as InitUser
 from django.contrib.sessions.base_session import AbstractBaseSession
 # from django.contrib.sessions.models import Session
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 import random
 from uuid import uuid4
+
+
+class User(AbstractUser):
+    domain_name = models.CharField(max_length=255) 
+    
+    REQUIRED_FIELDS = ('email', 'domain_name', )
 
 class CustomSession(AbstractBaseSession):
     created_at = models.DateTimeField(auto_now_add=True, null=False, blank=False)
@@ -28,17 +35,18 @@ class GroupChat(models.Model):
     title = models.CharField(max_length=255, blank=False, null=False)
     unique_code = models.CharField(
         max_length=10)
+    domain_name = models.CharField(max_length=255)
     date_created = models.DateTimeField(auto_now_add=True)
 
 
-class Member(models.Model):
-    chat = models.ForeignKey(GroupChat, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    anon_user = models.ForeignKey(CustomSession, on_delete=models.CASCADE, null=True)
-    date_created = models.DateField(auto_now_add=True)
+# class Member(models.Model):
+#     chat = models.ForeignKey(GroupChat, on_delete=models.CASCADE)
+#     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+#     anon_user = models.ForeignKey(CustomSession, on_delete=models.CASCADE, null=True)
+#     date_created = models.DateField(auto_now_add=True)
 
-    def __str__(self):
-        return self.user.username
+#     def __str__(self):
+#         return self.user.username
 
 
 class Message(models.Model):

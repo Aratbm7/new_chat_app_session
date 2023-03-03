@@ -2,6 +2,7 @@ from django.shortcuts import render
 from .models import GroupChat
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
+
 import re
 import codecs
 
@@ -30,17 +31,38 @@ def aes_encryption(s1, s2):
     # print(type(sanitized_group_name))
     return sanitized_group_name
 
-
 def room(request):
     if request.method == 'GET':
         request.session.save()
         session_key = request.session.session_key
         
-        if not GroupChat.objects.filter(creator=request.session.session_key).exists():
-            unique_code = aes_encryption(request.META['HTTP_HOST'], session_key)    
-            print('unique_code_from_view', unique_code)
-            GroupChat.objects.create(creator=session_key, 
-                                     title='question_from = %s' % session_key,
-                                     unique_code=unique_code)
+        if not request.user.is_staff:
+            if not GroupChat.objects.filter(creator=request.session.session_key).exists():
+                domain_name = request.META['HTTP_HOST'].split(':')[0]
+                unique_code = aes_encryption(request.META['HTTP_HOST'], session_key)    
+                print('unique_code_from_view', unique_code)
+                GroupChat.objects.create(creator=session_key, 
+                                         title='question_from = %s' % session_key,
+                                         unique_code=unique_code,
+                                         domain_name=domain_name)
+        
+        # if request.user.is_staff:
 
     return render (request, 'chat/chatroom.html')
+
+
+
+def chat_list(request):
+    if request.method == 'GET':
+        if request.user.is_staff:
+            # domain_name = request.META['HTTP_HOST'].split(':')[0]
+            domain_name = request.user.domain_name
+            print(domain_name)
+            chat_list = list(GroupChat.objects.filter(domain_name=domain_name))
+            
+        return render(request, 'chat/index.html', {'chat_list': chat_list})
+
+
+def answer_to_chat(request, room_name):
+    
+    return render(request, 'chat/admin_chatroom.html', {'room_name': room_name})

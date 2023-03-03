@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ['*']
 
 
 INSTALLED_APPS = [
+    'chat',
     'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -42,7 +43,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
-    'chat',
     # 'custom_session',
 ]
 
@@ -139,10 +139,17 @@ CHANNEL_LAYERS = {
     },
 }
 
+AUTH_USER_MODEL = "chat.User" 
 
 # custom session model
-# SESSION_SAVE_EVERY_REQUEST = True
+SESSION_SAVE_EVERY_REQUEST = True
 SESSION_ENGINE = "core.session_backend"
+
+DJOSER = {
+    'SERIALIZERS': {
+        'user_create': 'chat.serializers.UserCreateSerializers',
+    },
+}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from .models import User
 
 from django.contrib.sessions.models import Session
 
@@ -24,3 +25,7 @@ class SessionAdmin(admin.ModelAdmin):
     def updated(self, obj):
         return obj.custom_session.updated_at
     updated.short_description = 'updated_at'
+    
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    fields = [ 'username', 'domain_name']

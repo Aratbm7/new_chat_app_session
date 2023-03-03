@@ -1,0 +1,10 @@
+<ul>
+{% for chat in chat_list %}
+
+<li>
+    <a href="http://{{chat.domain_name}}"> {{ chat.unique_code}}</a>
+</li>
+
+{% endfor %}
+
+</ul>
