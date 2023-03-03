@@ -1,7 +1,8 @@
 from django.shortcuts import render
-from .models import GroupChat
+from .models import GroupChat, Message
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
+from django.shortcuts import get_object_or_404
 
 import re
 import codecs
@@ -45,24 +46,38 @@ def room(request):
                                          title='question_from = %s' % session_key,
                                          unique_code=unique_code,
                                          domain_name=domain_name)
-        
-        # if request.user.is_staff:
-
-    return render (request, 'chat/chatroom.html')
+            try:
+                chat_id = get_object_or_404(GroupChat, creator=session_key).id
+                messages = list(Message.objects.filter(chat_id=chat_id))
+            
+            except:
+                messages = None
+            
+                
+            
+    print('messages== ', messages)
+    return render (request, 'chat/chatroom.html', {'messages': messages})
 
 
 
 def chat_list(request):
     if request.method == 'GET':
+        chat_list = None
         if request.user.is_staff:
             # domain_name = request.META['HTTP_HOST'].split(':')[0]
             domain_name = request.user.domain_name
             print(domain_name)
             chat_list = list(GroupChat.objects.filter(domain_name=domain_name))
             
-        return render(request, 'chat/index.html', {'chat_list': chat_list})
+    return render(request, 'chat/index.html', {'chat_list': chat_list})
 
 
 def answer_to_chat(request, room_name):
+    try:
+        chat_id = get_object_or_404(GroupChat, unique_code=room_name).id
+        messages = list(Message.objects.filter(chat_id=chat_id))
+        
+    except:
+        messages = None
     
-    return render(request, 'chat/admin_chatroom.html', {'room_name': room_name})
+    return render(request, 'chat/admin_chatroom.html', {'room_name': room_name, 'messages': messages})
