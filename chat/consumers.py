@@ -100,6 +100,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 class AdminCunsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
+        print(self.scope)
         self.user = self.scope['user']
         self.room = self.scope['url_route']['kwargs']['room_name']
         print('self.room = %s' % self.room)

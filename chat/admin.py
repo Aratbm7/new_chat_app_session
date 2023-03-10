@@ -28,4 +28,4 @@ class SessionAdmin(admin.ModelAdmin):
     
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    fields = [ 'username', 'domain_name']
+    fields = [ 'username', 'domain_name', 'is_staff', 'is_superuser',]

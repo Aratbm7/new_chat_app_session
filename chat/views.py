@@ -27,7 +27,7 @@ def aes_encryption(s1, s2):
     # print('room_name =',room_name)
     # print(type(room_name))
     group_name = room_name
-    sanitized_group_name = re.sub(r'[^\w.-]', '', group_name)[:100]
+    sanitized_group_name = re.sub(r'[^\w.-]', '', group_name)[:100].replace('.','')
     # print('sanitized_group_name =', sanitized_group_name)
     # print(type(sanitized_group_name))
     return sanitized_group_name

@@ -63,11 +63,16 @@
 
         chatSocket.onmessage = function (e) {
             const data = JSON.parse(e.data);
-            console.log(data)
+            console.log(e)
             document.querySelector('#chat-text').value += (data.username + ': ' + data.message + '\n')
         }
     </script>
-
+<script>
+    document.getElementById("chat-text").onclick=function(){
+        document.getElementById("chat-text").style.color='red'
+    }
+    
+    </script
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
