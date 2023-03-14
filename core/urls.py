@@ -21,11 +21,13 @@ from djoser.views import TokenCreateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('chat.urls')),
+    # path('', include('chat.urls')),
+    path('__debug__/', include('debug_toolbar.urls')),
+    path('', include('account.urls')),
+    
     # path('register/',  register, name='register'),
     # path('login/', LoginView.as_view(template_name='chat/login.html'), name='login'),
     # path('login/', LogoutView.as_view(template_name='chat/logout.html'), name='logout'),
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
-    path('auth/token/create', TokenCreateView.as_view(), name='create_token'),
-]
+    path('auth/token/create', TokenCreateView.as_view(), name='create_token'),]

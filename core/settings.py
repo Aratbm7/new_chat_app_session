@@ -31,9 +31,11 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 
+
 INSTALLED_APPS = [
-    'chat',
-    'daphne',
+    'account', 
+    # 'chat',
+    # 'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,6 +45,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
+    "debug_toolbar",
+
+
     # 'custom_session',
 ]
 
@@ -52,8 +57,10 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'account.middleware.RequestMiddleware', # new
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware", # for development
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -129,7 +136,8 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # channels
-ASGI_APPLICATION = "core.routing.application"
+# ASGI_APPLICATION = "core.routing.application"
+ASGI_APPLICATION = "core.asgi.application"
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
@@ -139,20 +147,31 @@ CHANNEL_LAYERS = {
     },
 }
 
-AUTH_USER_MODEL = "chat.User" 
+AUTH_USER_MODEL = "account.User" 
 
 # custom session model
-SESSION_SAVE_EVERY_REQUEST = True
 SESSION_ENGINE = "core.session_backend"
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_SAVE_EVERY_REQUEST = True
 
-DJOSER = {
-    'SERIALIZERS': {
-        'user_create': 'chat.serializers.UserCreateSerializers',
-    },
-}
+# DJOSER = {
+#     'SERIALIZERS': {
+#         'user_create': 'chat.serializers.UserCreateSerializers',
+#     },
+# }
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
 }
+
+# USE_X_FORWARDED_HOST = True
+# USE_X_FORWARDED_PORT = True
+
+ # for debug toolbar only
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    # ...
+]
