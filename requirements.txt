@@ -7,4 +7,6 @@ drf-nested-routers
 djoser
 pycryptodome
 
+drf-yasg # for documentation
+django-debug-toolbar # for development
 

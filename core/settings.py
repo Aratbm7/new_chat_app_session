@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
-    "debug_toolbar",
+    "debug_toolbar", # for development
+    'drf_yasg', # for development
 
 
     # 'custom_session',
@@ -164,6 +165,12 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
+}
+
+DJOSER = {
+    'SERIALIZERS': {
+        'user_create': 'account.serializers.CustomUserCreateSerializer',
+    }
 }
 
 # USE_X_FORWARDED_HOST = True

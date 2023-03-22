@@ -1,14 +1,19 @@
-from django.shortcuts import render
 from django.http import HttpResponse
-from .models import CustomSession
+from rest_framework.response import Response
+from rest_framework import status
 from django.db.models import F
 from .  import serializers
 from . import models
 from rest_framework.viewsets import ModelViewSet
 from .permissions import (personal_permissions, ProfilePermison
-                          , SitePermission)
-from rest_framework.permissions import AllowAny
-# from django.contrib.sessions.middleware 
+                          , SitePermission, CustomGroupPermission)
+from rest_framework.decorators import action
+from djoser.views import UserViewSet
+
+class CustomUserViewSet(UserViewSet):
+    def get_serializer_context(self):
+        return {'request': self.request}
+
 
 def exam(request):
     
@@ -20,20 +25,24 @@ def exam(request):
 class ProfileViewSet(ModelViewSet):
     queryset = models.Profile.objects.select_related('user').all()
     serializer_class = serializers.ProfileSerializer
-    permission_classes = [ProfilePermison, personal_permissions({'u':15, 'o':0})]
+    permission_classes = [ProfilePermison, personal_permissions({'u':31, 'o':0})]
+    http_method_names = ['get', 'delete', ]
+    
+    def create(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def update(self, request, *args, **kwargs):
-        
-        return super().update(request, *args, **kwargs)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    def partial_update(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
     def perform_update(self, serializer):
         return super().perform_update(serializer)
     
     def get_serializer_context(self):
-        
+      
         return {'user_id': self.request.user.id, 'request': self.request}
-    
-    
-    
+      
 class SiteViewSet(ModelViewSet):
     serializer_class = serializers.SiteSeializers
     permission_classes = [SitePermission, personal_permissions({'o':0, 'u':63})]
@@ -49,5 +58,11 @@ class SiteViewSet(ModelViewSet):
 
     def get_serializer_context(self):
         return {'profile_pk': self.kwargs['profile_pk']}
+    
+class GroupViewSet(ModelViewSet):
+    queryset = models.CustomGroup.objects.all()
+    serializer_class = serializers.GroupSerializers
+    permission_classes = [CustomGroupPermission]
+    
     
     

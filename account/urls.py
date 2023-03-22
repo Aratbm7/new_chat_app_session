@@ -6,6 +6,7 @@ from rest_framework_nested.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register('profile', views.ProfileViewSet, basename='profiles')
+router.register('groups', views.GroupViewSet, basename='groups')
 
 profile_router = routers.NestedDefaultRouter(router, 'profile', lookup='profile')
 profile_router.register('sites', views.SiteViewSet, basename='profile-sites')

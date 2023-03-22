@@ -1,10 +1,11 @@
 from django.contrib import admin
-from .models import User
+from .models import User, Profile
 
-from django.contrib.sessions.models import Session
+# from django.contrib.sessions.models import Session
+from .models import CustomSession
 
 
-@admin.register(Session)
+@admin.register(CustomSession)
 class SessionAdmin(admin.ModelAdmin):
 
     readonly_fields = ('created', 'updated')
@@ -28,4 +29,11 @@ class SessionAdmin(admin.ModelAdmin):
     
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    fields = [ 'username', 'domain_name', 'is_staff', 'is_superuser',]
+    fields = [ 'username', 'is_staff', 'is_superuser', 'custom_groups']
+
+    
+    
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    fields = ('parent', 'user', 'balance')
+    

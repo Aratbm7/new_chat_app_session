@@ -34,7 +34,7 @@ class ChatRoom(GeneralDate):
     
     REMOVE_STATUS = (
         (UNREMOVED, 'unremoved'),
-        (REMOVED, 'removed')
+        (REMOVED, 'removed')    
     )
     
     name = models.CharField(max_length=255)

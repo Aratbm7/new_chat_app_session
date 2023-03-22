@@ -25,9 +25,9 @@ def return_view_action_lists(input_dict, client_type):
 
 def personal_permissions(input_dict):
     send_dict = defaultdict(lambda: 63)
-    print('defaultdict',send_dict)
+    # print('defaultdict',send_dict)
     send_dict.update(input_dict)
-    print('update send_dict',send_dict)
+    # print('update send_dict',send_dict)
 
     class CustomPermisson(permissions.BasePermission):
 
@@ -55,11 +55,13 @@ def personal_permissions(input_dict):
 class ProfilePermison(permissions.BasePermission):
     
     def has_permission(self, request, view):
+                
         if view.action == 'list':
-            return bool (False or request.user.is_staff)
+            return bool (request.user.is_staff)
         return True
 
     def has_object_permission(self, request, view, obj):
+        
         if view.action in ('retrieve', 'update', 'partial_update',):
             profile = Profile.objects.select_related('user')\
                 .get(user_id=request.user.id)
@@ -81,3 +83,13 @@ class SitePermission(permissions.BasePermission):
             
             return True
 
+
+
+class CustomGroupPermission(permissions.BasePermission):
+    
+    def has_permission(self, request, view):
+        if not request.user.is_anonymous:
+            if not request.user.profile.parent:
+                return False
+            else:
+                return True

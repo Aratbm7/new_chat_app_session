@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User, AbstractUser
 from django.contrib.sessions.base_session import AbstractBaseSession
 # from django.contrib.sessions.models import Session
+from uuid import uuid4
 
 class GeneralDate(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
@@ -29,26 +30,21 @@ class Profile(GeneralDate):
     parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     balance = models.IntegerField(default=0)
+    user_code = models.CharField(max_length=128, default=uuid4)
     
     
     def __str__(self) -> str:
         
         return self.user.username
     
-    # def save(self, *args, **kwargs) -> None:
-    #     if not self.parent:
-    #         self.is_owner = True    
-            
-    #     super(Profile, self).save(*args, **kwargs)
-
-    
-
-
 
 class Site(GeneralDate):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     url = models.URLField(max_length=255)
+    
+    def __str__(self) -> str:
+        return self.name
 
 
 # # todo:add settings
@@ -56,10 +52,10 @@ class Site(GeneralDate):
 #     site = models.ForeignKey(Site, on_delete=models.CASCADE)
 
 
-# class Group(GeneralDate):
-#     users = models.ManyToManyField(User, related_name="groups")
-#     name = models.CharField(max_length=100)
-
+class CustomGroup(GeneralDate):
+    users = models.ManyToManyField(User, related_name="custom_groups")
+    name = models.CharField(max_length=100)
+    
 
 # class Category(GeneralDate):
 #     name = models.CharField(max_length=100)
