@@ -54,6 +54,4 @@ class SessionStore(DBStore):
             name =name,
             email = email,
 
-            
-           
        )

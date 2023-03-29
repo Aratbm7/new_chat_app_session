@@ -57,12 +57,30 @@ class SiteViewSet(ModelViewSet):
     
 
     def get_serializer_context(self):
-        return {'profile_pk': self.kwargs['profile_pk']}
+        return {'profile_pk': self.kwargs['profile_pk'], 
+                'request': self.request}
     
 class GroupViewSet(ModelViewSet):
-    queryset = models.CustomGroup.objects.all()
+    # queryset = 
     serializer_class = serializers.GroupSerializers
     permission_classes = [CustomGroupPermission]
     
+    
+    def get_serializer_context(self):
+        return {'request':self.request}
+    
+    def perform_create(self, serializer):
+        admin_user = self.request.user
+        serializer
+        return super().perform_create(serializer)
+    
+    def get_queryset(self):
+        if self.request.method == 'GET':
+            
+            groups= self.request.user.admin_groups.all()
+            print(groups)
+            return groups
+        return models.CustomGroup.objects.all()
+
     
     

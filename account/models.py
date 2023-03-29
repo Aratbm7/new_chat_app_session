@@ -3,6 +3,7 @@ from django.contrib.auth.models import User, AbstractUser
 from django.contrib.sessions.base_session import AbstractBaseSession
 # from django.contrib.sessions.models import Session
 from uuid import uuid4
+from django.db.models import Q
 
 class GeneralDate(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
@@ -13,9 +14,7 @@ class GeneralDate(models.Model):
 
 class User(AbstractUser):
     email = models.EmailField(unique=True, db_index=True) 
-    
     REQUIRED_FIELDS = ['email']
-    
     def __str__(self) -> str:
         return self.username
 
@@ -28,34 +27,49 @@ class CustomSession(AbstractBaseSession ,GeneralDate):
         
 class Profile(GeneralDate):
     parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True)
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     balance = models.IntegerField(default=0)
     user_code = models.CharField(max_length=128, default=uuid4)
     
     
+    # def get_user_sites(self, ):
+    #     Site.objects.filter(Q(profile=self) | Q(group=) )
+    #     return 
+    
+    
     def __str__(self) -> str:
-        
         return self.user.username
     
 
 class Site(GeneralDate):
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='users')
+
+    
+    support_user = models.ManyToManyField(User,
+                                          related_name='suport_users',
+                                          null=True)
     name = models.CharField(max_length=100)
     url = models.URLField(max_length=255)
+    uniqe_code = models.CharField(max_length=128, default=uuid4)
+    group = models.ForeignKey('CustomGroup', on_delete=models.SET_NULL, null=True)
     
     def __str__(self) -> str:
         return self.name
 
 
+class CustomGroup(GeneralDate):
+    group_admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name='admin_groups')
+    users = models.ManyToManyField(User, related_name="custom_groups")
+    name = models.CharField(max_length=100)
+    
+    class Meta:
+        unique_together = ('group_admin', 'name',)
+    
 # # todo:add settings
 # class SiteSetting(GeneralDate):
 #     site = models.ForeignKey(Site, on_delete=models.CASCADE)
 
 
-class CustomGroup(GeneralDate):
-    users = models.ManyToManyField(User, related_name="custom_groups")
-    name = models.CharField(max_length=100)
-    
 
 # class Category(GeneralDate):
 #     name = models.CharField(max_length=100)

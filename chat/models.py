@@ -6,14 +6,14 @@ import random
 from uuid import uuid4
 
 
-def unique_code_generator(length=10):
-    source = uuid4().hex
-    result = ""
-    for _ in range(length):
-        result += source[random.randint(0, length)]
-        print(result)
+# def unique_code_generator(length=10):
+#     source = uuid4().hex
+#     result = ""
+#     for _ in range(length):
+#         result += source[random.randint(0, length)]
+#         print(result)
 
-    return result
+#     return result
 
 
 class GeneralDate(models.Model):
@@ -24,9 +24,12 @@ class GeneralDate(models.Model):
         abstract = True
 
 class ChatRoom(GeneralDate):
+    OFF = 0
+    ON = 1
+    
     STATUS = (
-        (0, 'offline'),
-        (1, 'online')
+        (OFF, 'offline'),
+        (ON, 'online')
     )
     
     REMOVED = 1
@@ -37,28 +40,37 @@ class ChatRoom(GeneralDate):
         (REMOVED, 'removed')    
     )
     
+    # Admin user is admin of that site anon user goes there
+    admin_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                   related_name='admin_users')
     name = models.CharField(max_length=255)
     comment = models.TextField(null=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,)
-    anon_user = models.ForeignKey('account.CustomSession', on_delete=models.CASCADE)
+    # any chats that it user field is null is shown to the suporters
+    suporter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, 
+                             related_name='suporters')
+    session = models.ForeignKey('account.CustomSession', on_delete=models.CASCADE)
     site = models.ForeignKey("account.Site", on_delete=models.SET_NULL, null=True)
     last_message_time = models.DateTimeField(blank=True, null=True)
-    status = models.IntegerField(default=0, choices=STATUS)
+    status = models.IntegerField(default=OFF, choices=STATUS)
     remove = models.IntegerField(default=UNREMOVED, choices=REMOVE_STATUS)
     ticket = models.IntegerField(default=0)
     unique_code = models.CharField(
-        max_length=10, default=unique_code_generator)
+        max_length=10, default=uuid4)
+    group = models.ForeignKey("account.CustomGroup",
+                              on_delete=models.SET_NULL, 
+                              related_name='groups', 
+                              null=True)
 
 
-# class Message(GeneralDate):
-#     chat_room = models.ForeignKey(ChatRoom, on_delete=models.SET_NULL)
-#     body = models.TextField()
-#     user = models.ForeignKey("User")
-#     session = models.ForeignKey("CustomSession")
-#     status = models.IntegerField()
-#     view = models.IntegerField()
-#     reply = models.ForeignKey("Message", on_delete=models.CASCADE)
-#     remove = models.IntegerField(default=0)
+class Message(GeneralDate):
+    chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='messages')
+    body = models.TextField()
+    user = models.ForeignKey("account.User", on_delete=models.CASCADE, related_name='messages', null=True)
+    session = models.ForeignKey("account.CustomSession",on_delete=models.CASCADE,related_name='messages', null=True)
+    status = models.IntegerField(default=0)
+    view = models.IntegerField(default=0)
+    reply = models.ForeignKey("Message", on_delete=models.CASCADE,related_name='messages', null=True)
+    remove = models.IntegerField(default=0)
 
 
 # class Attachment(GeneralDate):
@@ -69,39 +81,6 @@ class ChatRoom(GeneralDate):
 #     message = models.ForeignKey(Message, on_delete=models.SET_NULL)
 #     chat_room = models.ForeignKey(ChatRoom, on_delete=models.SET_NULL)
 #     url = models.URLField()
-
-
-# class Message(GeneralDate):
-#     chat_room = models.ForeignKey(ChatRoom, on_delete=models.SET_NULL)
-#     body = models.TextField()
-#     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-#     session = models.ForeignKey("account.CustomSession", on_delete=models.CASCADE)
-#     status = models.IntegerField()
-#     view = models.IntegerField()
-#     reply = models.ForeignKey("Message", on_delete=models.CASCADE)
-#     remove = models.IntegerField(default=0)
-
-
-# class Message(GeneralDate):
-#     chat_room = models.ForeignKey(ChatRoom, on_delete=models.SET_NULL)
-#     body = models.TextField()
-#     user = models.ForeignKey("User")
-#     session = models.ForeignKey("CustomSession")
-#     status = models.IntegerField()
-#     view = models.IntegerField()
-#     reply = models.ForeignKey("Message", on_delete=models.CASCADE)
-#     remove = models.IntegerField(default=0)
-
-
-# class Attachment(GeneralDate):
-#     file = models.FileField()
-#     file_type = models.IntegerField()
-#     admin_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
-#     support_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
-#     message = models.ForeignKey(Message, on_delete=models.SET_NULL)
-#     chat_room = models.ForeignKey(ChatRoom, on_delete=models.SET_NULL)
-#     url = models.URLField()
-
 
 # class ChangeUserHistory(GeneralDate):
 #     from_user = models.ForeignKey(settings.AUTH_USER_MODEL)

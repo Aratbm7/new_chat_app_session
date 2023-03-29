@@ -77,8 +77,10 @@ class SiteSeializers(serializers.ModelSerializer):
         sites = models.Site.objects.select_related('profile')\
         .filter(profile_id=self.context['profile_pk'])\
             .values_list('url', flat=True)
-        if value in sites:
-            raise serializers.ValidationError('you have this urls in your sites list already')
+        request = self.context['request']
+        if request.method == 'POST':
+            if value in sites:
+                raise serializers.ValidationError('you have this urls in your sites list already')
         return value
         
     def create(self, validated_data):
@@ -86,15 +88,50 @@ class SiteSeializers(serializers.ModelSerializer):
         return models.Site.objects.create(profile_id=profile_pk, **validated_data)
 
 
+
+    
 class GroupSerializers(serializers.ModelSerializer):
+    group_admin = serializers.StringRelatedField(read_only=True)
+    # users = serializers.SerializerMethodField()
+
+    
     class Meta:
         model = models.CustomGroup
-        fields = ('id', 'name', 'users')
+        fields = ('id', 'name', 'users','group_admin' )
+        
+    def get_fields(self):
+        fields = super().get_fields()
+        user = self.context['request'].user
+        users = models.User.objects.filter(profile__parent__user=user)
+        fields['users'] = serializers.PrimaryKeyRelatedField(many=True,
+                                                             queryset=users)
+        return fields
+
+    # def get_users(self, obj):
+    #     users = obj.users.all()
+    #     username = [user.username for user in users]
+    #     return username
+        
+        
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['users'] = [user.username for user in instance.users.all()]
+        return representation
+    
+    def validate(self, data):
+        request = self.context['request']
+        if (request.method == 'POST' and 
+            request.user.admin_groups.filter(name=data['name']).first()):
+                raise serializers.ValidationError('you already have group with this name')
+            
+        return data
         
         
     def create(self, validated_data):
-        
-        
-        
-        
-        return super().create(validated_data)
+        user = self.context['request'].user
+        users = validated_data.pop("users")
+        a = models.CustomGroup.objects.create(**validated_data, group_admin = user)
+        a.users.add(*users)
+        return a
+
+

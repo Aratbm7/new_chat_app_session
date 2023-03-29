@@ -46,6 +46,7 @@ urlpatterns = [
     # path('', include('chat.urls')),
     path('__debug__/', include('debug_toolbar.urls')),
     path('', include('account.urls')),
+    path('chat/', include('chat.urls')),
     
     # path('register/',  register, name='register'),
     # path('login/', LoginView.as_view(template_name='chat/login.html'), name='login'),

@@ -34,8 +34,8 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'account', 
-    # 'chat',
-    # 'daphne',
+    'chat',
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -138,7 +138,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # channels
 # ASGI_APPLICATION = "core.routing.application"
-ASGI_APPLICATION = "core.asgi.application"
+ASGI_APPLICATION = "core.routing.application"
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",

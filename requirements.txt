@@ -9,4 +9,4 @@ pycryptodome
 
 drf-yasg # for documentation
 django-debug-toolbar # for development
-
+daphne # channels['daphne']

@@ -79,7 +79,8 @@ class SitePermission(permissions.BasePermission):
             print('profile_pk from permission', self)
             if view.action in ['list', 'retrieve', 'create', 'destroy', 'partial_update', 'option']:
                 if request.user.is_authenticated:
-                    return bool(request.user.profile.id == int(view.kwargs['profile_pk']))
+                    return bool(request.user.profile.id == int(view.kwargs['profile_pk']) and
+                                 request.user.profile.parent == None)
             
             return True
 
@@ -90,6 +91,23 @@ class CustomGroupPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         if not request.user.is_anonymous:
             if not request.user.profile.parent:
-                return False
-            else:
                 return True
+            else:
+                return False
+            
+class SongPermissions(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        if view.action == 'create':
+            album_slug = view.kwargs['album_slug']
+            albums = get_object_or_404(Profile, user_id=request.user.id).albums.all()\
+                         .values_list('slug', flat=True)
+            return bool(album_slug in albums)
+        return True
+
+    def has_object_permission(self, request, view, obj):
+        if view.action == 'retrieve':
+            return True
+
+
+
