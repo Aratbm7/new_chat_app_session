@@ -51,9 +51,10 @@ class SiteViewSet(ModelViewSet):
     def get_queryset(self):
         print('sefl.kwargs', self.kwargs)
 
-        return  models.Site.objects.select_related('profile')\
-            .select_related('profile__user')\
-            .filter(profile=self.kwargs['profile_pk'])
+        return  models.Site.objects.select_related('user')\
+                    .prefetch_related('groups')\
+                     .prefetch_related('support_users')\
+                         .filter(user=self.request.user)
     
 
     def get_serializer_context(self):

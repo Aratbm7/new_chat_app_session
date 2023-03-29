@@ -42,16 +42,12 @@ class Profile(GeneralDate):
     
 
 class Site(GeneralDate):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='users')
-
-    
-    support_user = models.ManyToManyField(User,
-                                          related_name='suport_users',
-                                          null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sites')
     name = models.CharField(max_length=100)
     url = models.URLField(max_length=255)
     uniqe_code = models.CharField(max_length=128, default=uuid4)
-    group = models.ForeignKey('CustomGroup', on_delete=models.SET_NULL, null=True)
+    support_users = models.ManyToManyField(User,related_name='supported_sites')
+    groups = models.ManyToManyField('CustomGroup',related_name='group_sites')
     
     def __str__(self) -> str:
         return self.name
@@ -64,6 +60,9 @@ class CustomGroup(GeneralDate):
     
     class Meta:
         unique_together = ('group_admin', 'name',)
+        
+    def __str__(self) -> str:
+        return self.name
     
 # # todo:add settings
 # class SiteSetting(GeneralDate):

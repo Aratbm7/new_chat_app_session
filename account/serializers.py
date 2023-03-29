@@ -32,60 +32,61 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = models.Profile
         fields = ('id', 'parent', 'user_id', 'balance', 'user')
 
-    # def validate_parent(self, value):
-    #     profile = models.Profile.objects.select_related('user')\
-    #         .get(user=self.context['request'].user)
-    #     if value ==  profile:
-    #         raise serializers.ValidationError('your parent cannot be yourself')
-    #     return value
-
     def validate(self, data):
         profile = models.Profile.objects.select_related('user')\
             .get(user=self.context['request'].user)
         if data['parent'] ==  profile:
             raise serializers.ValidationError('your parent cannot be yourself')
-        
-        # user_id = self.context['user_id']
-        
-        # if models.Profile.objects.filter(user_id=user_id).exists(): 
-        #     raise serializers.ValidationError('you have a profile already')
+
         return data
 
-     
-    # def create(self, validated_data):
-    #     user_id = self.context['user_id']
-    #     return models.Profile.objects.create(user_id=user_id, **validated_data)
-    
-    
-    # def update(self, instance, validated_data):
-    #     print('validate_data', validated_data)
-    #     instance.balance = validated_data['balance']
-    #     instance.parent = validated_data['parent']
-    #     instance.save()
-    #     return instance
-    
+  
 class SiteSeializers(serializers.ModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
-    profile = serializers.StringRelatedField(read_only=True)
+    user = serializers.StringRelatedField()
 
     class Meta:
         model = models.Site
-        fields = '__all__'
-
+        fields =('id', 'name', 'url', 'groups', 'support_users', 'user')
+        
+    def get_fields(self):
+        fields = super().get_fields()
+        user = self.context['request'].user
+        groups = models.CustomGroup.objects\
+            .select_related('group_admin')\
+                .prefetch_related('users')\
+                    .filter(group_admin=user)
+        fields['groups'] = serializers.PrimaryKeyRelatedField(many=True, queryset=groups)
+        users = models.User.objects\
+            .select_related('profile')\
+                .filter(profile__parent__user=user)
+        fields['support_users'] = serializers.PrimaryKeyRelatedField(many=True, queryset=users)
+        return fields
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['support_users'] = [support_user.username for support_user in instance.support_users.all()]
+        representation['groups'] = [group.name for group in instance.groups.all()]
+        return representation
+    
     def validate_url(self, value):
-        sites = models.Site.objects.select_related('profile')\
-        .filter(profile_id=self.context['profile_pk'])\
-            .values_list('url', flat=True)
+        site = models.Site.objects.select_related('user')\
+        .filter(user=self.context['request'].user, url=value).first()
         request = self.context['request']
-        if request.method == 'POST':
-            if value in sites:
-                raise serializers.ValidationError('you have this urls in your sites list already')
+        if request.method == 'POST' and site:
+            raise serializers.ValidationError('you have this urls in your sites list already')
         return value
         
+   
     def create(self, validated_data):
-        profile_pk = self.context['profile_pk']
-        return models.Site.objects.create(profile_id=profile_pk, **validated_data)
+        user = self.context['request'].user
+        groups_data = validated_data.pop('groups', [])
+        support_users_data = validated_data.pop('support_users', [])
+        a= models.Site.objects.create(**validated_data, user=user, )
+        a.groups.add(*groups_data)
+        a.support_users.add(*support_users_data)
+        return a
 
 
 
@@ -103,8 +104,7 @@ class GroupSerializers(serializers.ModelSerializer):
         fields = super().get_fields()
         user = self.context['request'].user
         users = models.User.objects.filter(profile__parent__user=user)
-        fields['users'] = serializers.PrimaryKeyRelatedField(many=True,
-                                                             queryset=users)
+        fields['users'] = serializers.PrimaryKeyRelatedField(many=True, queryset=users)
         return fields
 
     # def get_users(self, obj):
